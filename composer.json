@@ -1,0 +1,49 @@
+{
+	"name": "contentreactor/craft-traduco",
+	"description": "Plain Text and HTML field based text translator integrating online translation services.",
+	"type": "craft-plugin",
+	"license": "MIT",
+	"support": {
+		"email": "support@contentreactor.com",
+		"issues": "https://github.com/contentreactor/craft-traduco/issues?state=open",
+		"source": "https://github.com/contentreactor/craft-traduco",
+		"docs": "https://github.com/contentreactor/craft-traduco",
+		"rss": "https://github.com/contentreactor/craft-traduco/releases.atom"
+	},
+	"require": {
+		"php": "^8.2",
+		"ext-libxml": "*",
+		"ext-dom": "*",
+		"craftcms/cms": "^5.8.0",
+		"deeplcom/deepl-php": "^1.18",
+		"google/cloud-translate": "^2.3",
+		"marcusgaius/field-value-parser": "^1.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"ContentReactor\\Traduco\\": "src/",
+			"ContentReactor\\Traduco\\Web\\Assets\\": "public/"
+		}
+	},
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"extra": {
+		"handle": "traduco",
+		"name": "Traduco",
+		"developer": "ContentReactor",
+		"documentationUrl": "https://github.com/contentreactor/craft-traduco"
+	},
+	"authors": [
+		{
+			"name": "ContentReactor",
+			"homepage": "https://contentreactor.com/"
+		}
+	],
+	"config": {
+		"allow-plugins": {
+			"yiisoft/yii2-composer": true,
+			"craftcms/plugin-installer": true,
+			"php-http/discovery": true
+		}
+	}
+}

@@ -1,0 +1,28 @@
+{% import '_includes/forms.twig' as forms %}
+
+<div id="general">
+	{% namespace 'UserSettings' %}
+		{{ forms.textField({
+			label: settings.getAttributeLabel('pluginName'),
+			instructions: settings.getAttributeHint('pluginName'),
+			showAttribute: true,
+			attribute: 'pluginName',
+			id: 'pluginName',
+			name: 'pluginName',
+			value: settings.pluginName ?? '',
+			errors: settings.getErrors('pluginName'),
+			disabled: not currentUser.can('traduco:settings:admin'),
+		}) }}
+
+		{{ forms.radioGroupField({
+			label: settings.getAttributeLabel('richTextEntries'),
+			instructions: settings.getAttributeHint('richTextEntries'),
+			id: 'richTextEntries',
+			name: 'richTextEntries',
+			value: settings.richTextEntries,
+			options: settings.getRichTextEntriesOptions(),
+			errors: settings.getErrors('richTextEntries'),
+			disabled: not currentUser.can('traduco:settings:admin'),
+		}) }}
+	{% endnamespace %}
+</div>

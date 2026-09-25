@@ -1,0 +1,48 @@
+{% extends '_layouts/cp.twig' %}
+{% set pluginName = craft.traduco.getPluginName() %}
+
+{% if title is not defined %}
+	{% set title = pluginName | t('traduco') %}
+{% endif %}
+
+{% set baseCrumbs = [
+	{
+		icon: '@traduco/icons/translate-translation.svg',
+		label: pluginName,
+		url: url('traduco'),
+	},
+	{
+		icon: '@traduco/icons/settings.svg',
+		label: 'Settings' | t('traduco'),
+		url: url('traduco/settings'),
+	},
+] %}
+
+{% set selectedSubnavItem = 'settings' %}
+{% set crumbs = crumbs is defined ? baseCrumbs | merge(crumbs) : baseCrumbs %}
+
+{% block sidebar %}
+	<nav aria-label="{{ pluginName | t('traduco') }}">
+		<ul>
+			{% for handle, item in craft.traduco.getSettingsNavItems() %}
+				{% if item == '<hr>' %}
+					{{ item | raw }}
+				{% else %}
+					{% if handle == 'settings' %}
+						{% set uri = 'traduco/settings' %}
+					{% else %}
+						{% set uri = 'traduco/settings/' ~ handle %}
+					{% endif %}
+					<li>
+						<a {% if handle == settingsScreen %}class="sel"{% endif %} href="{{ url(uri) }}">
+							{% if item.iconSvg is defined and item.iconSvg | length > 0 %}
+								<span class="icon icon-mask" aria-hidden="true">{{ svg(item.iconSvg, sanitize=false) }}</span>
+							{% endif %}
+							<span class="label">{{ item.title | raw }}</span>
+						</a>
+					</li>
+				{% endif %}
+			{% endfor %}
+		</ul>
+	</nav>
+{% endblock %}

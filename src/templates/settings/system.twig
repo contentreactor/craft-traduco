@@ -1,0 +1,50 @@
+{% requirePermission 'traduco:settings:system' %}
+{% extends '@traduco/layouts/settings.twig' %}
+{# @var plugin \ContentReactor\Traduco\Plugin #}
+{# @var settings \ContentReactor\Traduco\Models\UserSettings #}
+
+{% import '_includes/forms.twig' as forms %}
+{% set settingsScreen = 'system' %}
+{% set fullPageForm = true %}
+
+{% block content %}
+	{{ actionInput('traduco/settings/save-system') }}
+	<div class="flex-fields">
+		{% namespace 'UserSettings' %}
+			{{ forms.selectField({
+				label: settings.attributeLabel('translator'),
+				instructions: settings.attributeHint('translator'),
+				showAttribute: true,
+				attribute: 'translator',
+				id: 'translator',
+				name: 'translator',
+				value: settings.translator ?? '',
+				options: settings.translatorOptions(),
+				errors: settings.getErrors('translator'),
+				fullWidth: true,
+				disabled: not (craft.app.config.general.allowAdminChanges and currentUser.can('traduco:settings:system')),
+			}) }}
+
+			{{ forms.autosuggestField({
+				instructions: settings.attributeHint('translatorApi'),
+				label: settings.attributeLabel('translatorApi'),
+				attribute: 'translatorApi',
+				id: 'translatorApi',
+				name: 'translatorApi',
+				value: settings.translatorApi,
+				required: true,
+				suggestEnvVars: true,
+				errors: settings.getErrors('translatorApi'),
+			}) }}
+		{% endnamespace %}
+	</div>
+{% endblock %}
+
+{% css %}
+#content .field .select {
+	display: block;
+}
+#content .field .select select {
+	width: 100%;
+}
+{% endcss %}
