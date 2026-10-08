@@ -173,10 +173,21 @@ Event::on(Translations::class, Translations::EVENT_REGISTER_TRANSLATOR, function
 
 Google Translate support is planned. Its translator class is a stub and isn’t offered yet.
 
+## Editions
+
+Traduco comes in two editions, from the Plugin Store:
+
+| | Lite | Pro |
+|---|:---:|:---:|
+| Translating a field from its action menu | ✓ | ✓ |
+| Translating whole elements into other sites, in the background, with their nested entries | | ✓ |
+
+On Lite, the element sidebar tells where translating whole elements comes from, and fields are still translated from their action menus.
+
 ## Support
 
 Report issues at https://github.com/contentreactor/craft-traduco/issues, or write to support@contentreactor.com.
 
 ## License
 
-MIT, see [LICENSE.md](LICENSE.md).
+The Craft License, see [LICENSE.md](LICENSE.md).

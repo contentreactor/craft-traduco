@@ -1,7 +1,22 @@
 {# @var element \craft\base\ElementInterface #}
 {# @var sites \ContentReactor\Traduco\Models\SiteLanguage[] #}
 {# @var disabled bool #}
+{# @var isPro bool Whole elements are translated with the Pro edition #}
 {% set id = 'traduco-' ~ random() %}
+{% if not (isPro ?? true) %}
+<div class="meta traduco">
+	<div class="field">
+		<div class="heading">
+			<label>{{ craft.traduco.settings.pluginName }}</label>
+		</div>
+		<div class="input ltr">
+			<p class="traduco-pro-notice light smalltext">
+				{{ 'Translating whole elements comes with {plugin} Pro. Fields can be translated from their action menus.' | t('traduco', { plugin: craft.traduco.settings.pluginName }) }}
+			</p>
+		</div>
+	</div>
+</div>
+{% else %}
 <div class="meta traduco">
 	<div class="field">
 		<div class="heading">
@@ -35,3 +50,4 @@
 
 {% do craft.traduco.registerAsset(traducoAsset, 'css/element-sidebar.css') %}
 {% do craft.traduco.registerAsset(traducoAsset, 'js/element-sidebar.js') %}
+{% endif %}

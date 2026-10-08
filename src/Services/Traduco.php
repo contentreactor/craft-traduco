@@ -74,6 +74,7 @@ class Traduco extends Component
 			'element' => $element,
 			'sites' => $sites,
 			'disabled' => !$this->canTranslate($element),
+			'isPro' => Plugin::getInstance()->isPro(),
 		]);
 
 		if (Plugin::getInstance()->getSettings()->getUserSettings()->sidebarPosition === 'top') $event->html = $sidebarHtml . $event->html;

@@ -43,6 +43,8 @@ class TranslationsController extends Controller
 
 	public function actionTranslateElement(): Response
 	{
+		Plugin::getInstance()->requirePro(Craft::t('traduco', 'Translating whole elements'));
+
 		$translatableElement = new TranslatableElement(
 			(int)$this->request->getRequiredBodyParam('elementId'),
 			(int)$this->request->getRequiredBodyParam('siteId'),

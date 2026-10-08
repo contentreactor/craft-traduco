@@ -26,6 +26,7 @@ use craft\web\{
 };
 use craft\web\twig\variables\CraftVariable;
 use MarcusGaius\FieldValueParser\FieldValueParser;
+use MarcusGaius\FieldValueParser\Traits\Editions;
 use yii\base\Event;
 use yii\web\Response;
 
@@ -40,6 +41,8 @@ use yii\web\Response;
  */
 class Plugin extends BasePlugin
 {
+	// Lite: translating fields from their action menus. Pro: translating whole elements into other sites, in the background.
+	use Editions;
 	use Services;
 
 	public string $schemaVersion = '2.2.0';

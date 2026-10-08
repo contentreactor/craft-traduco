@@ -2,7 +2,7 @@
 	"name": "contentreactor/craft-traduco",
 	"description": "Plain Text and HTML field based text translator integrating online translation services.",
 	"type": "craft-plugin",
-	"license": "MIT",
+	"license": "proprietary",
 	"support": {
 		"email": "support@contentreactor.com",
 		"issues": "https://github.com/contentreactor/craft-traduco/issues?state=open",
@@ -17,7 +17,7 @@
 		"craftcms/cms": "^5.8.0",
 		"deeplcom/deepl-php": "^1.18",
 		"google/cloud-translate": "^2.3",
-		"marcusgaius/field-value-parser": "^1.0"
+		"marcusgaius/field-value-parser": "^1.1"
 	},
 	"autoload": {
 		"psr-4": {
@@ -31,7 +31,9 @@
 		"handle": "traduco",
 		"name": "Traduco",
 		"developer": "ContentReactor",
-		"documentationUrl": "https://github.com/contentreactor/craft-traduco"
+		"documentationUrl": "https://github.com/contentreactor/craft-traduco",
+		"developerUrl": "https://www.contentreactor.com/",
+		"changelogUrl": "https://raw.githubusercontent.com/contentreactor/craft-traduco/main/CHANGELOG.md"
 	},
 	"authors": [
 		{
