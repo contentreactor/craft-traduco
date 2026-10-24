@@ -1,0 +1,61 @@
+{% requirePermission 'traduco:styles' %}
+{% extends 'traduco/layouts/index.twig' %}
+{# @var rule array see DeepL::getStyleRules() #}
+
+{% import '_includes/forms.twig' as forms %}
+{% set title = rule.name %}
+{% set selectedSubnavItem = 'styles' %}
+{% set crumbs = [{ label: 'Styles' | t('traduco'), url: url('traduco/styles') }] %}
+
+{% block content %}
+	<p class="light">{{ 'Written for {language}.' | t('traduco', { language: rule.language }) }}</p>
+
+	<form method="post" accept-charset="UTF-8">
+		{{ csrfInput() }}
+		{{ actionInput('traduco/styles/rename') }}
+		{{ hiddenInput('styleId', styleId) }}
+		<div class="flex-fields">
+			{{ forms.textField({ label: 'Name' | t('app'), id: 'name', name: 'name', value: rule.name, required: true }) }}
+		</div>
+		<div class="buttons"><button type="submit" class="btn submit">{{ 'Save' | t('app') }}</button></div>
+	</form>
+
+	<hr>
+	<h2>{{ 'Custom instructions' | t('traduco') }}</h2>
+	<p class="light">{{ 'Each one tells DeepL something to do in this language, in your own words.' | t('traduco') }}</p>
+
+	<table class="data fullwidth" id="traduco-style-instructions">
+		<thead>
+			<tr>
+				<th scope="col">{{ 'Label' | t('traduco') }}</th>
+				<th scope="col">{{ 'Instruction' | t('traduco') }}</th>
+				<th scope="col"><span class="visually-hidden">{{ 'Actions' | t('traduco') }}</span></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for instructionId, instruction in rule.instructions %}
+				<tr>
+					<form method="post">
+						{{ csrfInput() }}
+						{{ actionInput('traduco/styles/save-instruction') }}
+						{{ hiddenInput('styleId', styleId) }}
+						{{ hiddenInput('instructionId', instructionId) }}
+						<td>{{ tag('input', { type: 'text', class: 'text fullwidth', name: 'label', value: instruction.label }) }}</td>
+						<td>{{ tag('input', { type: 'text', class: 'text fullwidth', name: 'prompt', value: instruction.prompt }) }}</td>
+						<td class="thin"><button type="submit" class="btn small">{{ 'Save' | t('app') }}</button></td>
+					</form>
+				</tr>
+			{% endfor %}
+			<tr>
+				<form method="post">
+					{{ csrfInput() }}
+					{{ actionInput('traduco/styles/save-instruction') }}
+					{{ hiddenInput('styleId', styleId) }}
+					<td>{{ tag('input', { type: 'text', class: 'text fullwidth', name: 'label', placeholder: 'New label'|t('traduco') }) }}</td>
+					<td>{{ tag('input', { type: 'text', class: 'text fullwidth', name: 'prompt', placeholder: 'What DeepL should do'|t('traduco') }) }}</td>
+					<td class="thin"><button type="submit" class="btn small submit">{{ 'Add' | t('app') }}</button></td>
+				</form>
+			</tr>
+		</tbody>
+	</table>
+{% endblock %}

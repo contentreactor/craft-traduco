@@ -1,0 +1,68 @@
+{% requirePermission 'traduco:styles' %}
+{% extends 'traduco/layouts/index.twig' %}
+{# @var rules array by style ID, see DeepL::getStyleRules() #}
+
+{% import '_includes/forms.twig' as forms %}
+{% set title = 'Styles' | t('traduco') %}
+{% set selectedSubnavItem = 'styles' %}
+
+{% block content %}
+	{% if not isConfigured %}
+		<p class="error">{{ 'Style rules are DeepL’s. Select DeepL as the translator and save an API key it can use.' | t('traduco') }}</p>
+	{% else %}
+		<p class="light">
+			{{ 'A style rule is written for one language and tells DeepL how to sound in it. Choose which of them to translate with on System Settings. Their configured rules stay in DeepL’s own interface, which is the only place that documents them.' | t('traduco') }}
+		</p>
+
+		{% if rules is empty %}
+			<p>{{ 'This DeepL account has no style rules yet.' | t('traduco') }}</p>
+		{% else %}
+			<table class="data fullwidth" id="traduco-styles">
+				<thead>
+					<tr>
+						<th scope="col">{{ 'Name' | t('traduco') }}</th>
+						<th scope="col">{{ 'Language' | t('traduco') }}</th>
+						<th scope="col">{{ 'Instructions' | t('traduco') }}</th>
+						<th scope="col"><span class="visually-hidden">{{ 'Actions' | t('traduco') }}</span></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for styleId, rule in rules %}
+						<tr>
+							<td><a href="{{ url('traduco/styles/' ~ styleId) }}">{{ rule.name }}</a></td>
+							<td>{{ rule.language }}</td>
+							<td>{{ rule.instructions | length }}</td>
+							<td class="thin">
+								<form method="post">
+									{{ csrfInput() }}
+									{{ actionInput('traduco/styles/delete') }}
+									{{ hiddenInput('styleId', styleId) }}
+									<button type="submit" class="btn small delete">{{ 'Delete' | t('app') }}</button>
+								</form>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% endif %}
+
+		<hr>
+		<h2>{{ 'New style rule' | t('traduco') }}</h2>
+		<form method="post" accept-charset="UTF-8">
+			{{ csrfInput() }}
+			{{ actionInput('traduco/styles/create') }}
+			<div class="flex-fields">
+				{{ forms.textField({ label: 'Name' | t('app'), id: 'name', name: 'name', required: true }) }}
+				{{ forms.selectField({
+					label: 'Language' | t('traduco'),
+					instructions: 'The language this rule is written for. It’s only used where that is the language being translated into.' | t('traduco'),
+					id: 'language',
+					name: 'language',
+					options: languages,
+					required: true,
+				}) }}
+			</div>
+			<div class="buttons"><button type="submit" class="btn submit">{{ 'Create' | t('app') }}</button></div>
+		</form>
+	{% endif %}
+{% endblock %}

@@ -1,0 +1,48 @@
+{% requirePermission 'traduco:memories' %}
+{% extends 'traduco/layouts/index.twig' %}
+{# @var memories array by memory ID, see DeepL::getTranslationMemories() #}
+
+{% set title = 'Memories' | t('traduco') %}
+{% set selectedSubnavItem = 'memories' %}
+
+{% block content %}
+	{% if not isConfigured %}
+		<p class="error">{{ 'Translation memories are DeepL’s. Select DeepL as the translator and save an API key it can use.' | t('traduco') }}</p>
+	{% else %}
+		<p class="light">
+			{{ 'A translation memory reuses translations you already have. Choose which of them to translate with, and how close a match has to be, on System Settings. Creating a memory, renaming one and importing segments stay in DeepL’s own interface: it has no call for the first two, and its import waits until DeepL has finished, which a control panel request can’t.' | t('traduco') }}
+		</p>
+
+		{% if memories is empty %}
+			<p>{{ 'This DeepL account has no translation memories yet.' | t('traduco') }}</p>
+		{% else %}
+			<table class="data fullwidth" id="traduco-memories">
+				<thead>
+					<tr>
+						<th scope="col">{{ 'Name' | t('traduco') }}</th>
+						<th scope="col">{{ 'Languages' | t('traduco') }}</th>
+						<th scope="col">{{ 'Segments' | t('traduco') }}</th>
+						<th scope="col"><span class="visually-hidden">{{ 'Actions' | t('traduco') }}</span></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for memoryId, memory in memories %}
+						<tr>
+							<td>{{ memory.name }}</td>
+							<td>{{ memory.source }} → {{ memory.targets | join(', ') }}</td>
+							<td>{{ memory.segments }}</td>
+							<td class="thin">
+								<form method="post">
+									{{ csrfInput() }}
+									{{ actionInput('traduco/memories/delete') }}
+									{{ hiddenInput('memoryId', memoryId) }}
+									<button type="submit" class="btn small delete">{{ 'Delete' | t('app') }}</button>
+								</form>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% endif %}
+	{% endif %}
+{% endblock %}

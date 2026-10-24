@@ -1,0 +1,20 @@
+{#
+	The layout of the control panel section's own screens. The settings screens keep their own layout, which adds
+	their sub-sidebar, see layouts/settings.twig.
+#}
+{% extends '_layouts/cp.twig' %}
+{# Not craft.traduco, which Traduco only registers on control panel requests, and not the @traduco template root,
+   which is registered the same way: the plugin handle is a root Craft registers itself. #}
+{% set pluginName = craft.app.plugins.getPlugin('traduco').getPluginName() %}
+
+{% if title is not defined %}
+	{% set title = pluginName %}
+{% endif %}
+
+{% set baseCrumbs = [{
+	icon: '@traduco/icons/translate-translation.svg',
+	label: pluginName,
+	url: url('traduco'),
+}] %}
+
+{% set crumbs = crumbs is defined ? baseCrumbs | merge(crumbs) : baseCrumbs %}

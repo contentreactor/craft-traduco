@@ -1,0 +1,78 @@
+{% requirePermission 'traduco:glossaries' %}
+{% extends 'traduco/layouts/index.twig' %}
+{# @var plugin \ContentReactor\Traduco\Plugin #}
+{# @var glossaries array by glossary ID, see DeepL::getGlossaries() #}
+{# @var isAvailable bool whether DeepL is the selected translator, with a usable key #}
+
+{% set title = 'Glossaries' | t('traduco') %}
+{% set selectedSubnavItem = 'glossaries' %}
+
+{% block actionButton %}
+	{% if isAvailable %}
+		<a class="btn submit add icon" href="{{ url('traduco/glossaries/new') }}">{{ 'New glossary' | t('traduco') }}</a>
+	{% endif %}
+{% endblock %}
+
+{% block content %}
+	{% if not isAvailable %}
+		<p class="error">
+			{{ 'Glossaries are DeepL’s. Select DeepL as the translator and save an API key it can use.' | t('traduco') }}
+		</p>
+	{% elseif glossaries is empty %}
+		<p>{{ 'This DeepL account has no glossaries yet.' | t('traduco') }}</p>
+	{% else %}
+		<p class="light">
+			{{ 'These are the glossaries of the DeepL account the API key belongs to, not copies kept here. Choose which of them to translate with on System Settings.' | t('traduco') }}
+		</p>
+
+		<table class="data fullwidth" id="traduco-glossaries">
+			<thead>
+				<tr>
+					<th scope="col">{{ 'Name' | t('traduco') }}</th>
+					<th scope="col">{{ 'Dictionaries' | t('traduco') }}</th>
+					<th scope="col"><span class="visually-hidden">{{ 'Actions' | t('traduco') }}</span></th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for glossaryId, glossary in glossaries %}
+					<tr>
+						<td><a href="{{ url('traduco/glossaries/' ~ glossaryId) }}">{{ glossary.name }}</a></td>
+						<td>
+							{% if glossary.dictionaries is empty %}
+								<span class="light">{{ 'None yet' | t('traduco') }}</span>
+							{% else %}
+								<ul>
+									{% for dictionary in glossary.dictionaries %}
+										<li class="flex">
+											<a href="{{ url('traduco/glossaries/' ~ glossaryId, { source: dictionary.source, target: dictionary.target }) }}">
+												{{ dictionary.source }} → {{ dictionary.target }}
+											</a>
+											<span class="light">{{ '{count} entries' | t('traduco', { count: dictionary.entries }) }}</span>
+											{# Here rather than on the edit screen, which is one form the whole way down #}
+											<form method="post">
+												{{ csrfInput() }}
+												{{ actionInput('traduco/glossaries/delete-dictionary') }}
+												{{ hiddenInput('glossaryId', glossaryId) }}
+												{{ hiddenInput('source', dictionary.source) }}
+												{{ hiddenInput('target', dictionary.target) }}
+												<button type="submit" class="btn small delete">{{ 'Delete' | t('app') }}</button>
+											</form>
+										</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+						</td>
+						<td class="thin">
+							<form method="post">
+								{{ csrfInput() }}
+								{{ actionInput('traduco/glossaries/delete') }}
+								{{ hiddenInput('glossaryId', glossaryId) }}
+								<button type="submit" class="btn small delete">{{ 'Delete' | t('app') }}</button>
+							</form>
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+{% endblock %}

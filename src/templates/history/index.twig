@@ -1,0 +1,104 @@
+{% requirePermission 'traduco:history' %}
+{% extends 'traduco/layouts/index.twig' %}
+{# @var plugin \ContentReactor\Traduco\Plugin #}
+{# @var settings \ContentReactor\Traduco\Models\UserSettings #}
+{# @var runs \ContentReactor\Traduco\Models\TranslationRun[] #}
+
+{% set title = 'History' | t('traduco') %}
+{% set selectedSubnavItem = 'history' %}
+
+{% set statuses = {
+	queued: { label: 'Queued' | t('traduco'), color: 'blue' },
+	running: { label: 'Running' | t('traduco'), color: 'blue' },
+	done: { label: 'Translated' | t('traduco'), color: 'green' },
+	failed: { label: 'Failed' | t('traduco'), color: 'red' },
+} %}
+
+{% set kinds = {
+	element: 'Whole element' | t('traduco'),
+	field: 'One field' | t('traduco'),
+	text: 'Shown to copy' | t('traduco'),
+	rephrase: 'Rephrased' | t('traduco'),
+} %}
+
+{% block content %}
+	<p class="light">
+		{% if settings.historyRetentionDays > 0 %}
+			{{ 'Translations are kept for {days} days, and deleted on garbage collection after that.' | t('traduco', { days: settings.historyRetentionDays }) }}
+		{% else %}
+			{{ 'Translations are kept until they’re deleted by hand, as the retention setting is 0.' | t('traduco') }}
+		{% endif %}
+	</p>
+
+	{% if runs is empty %}
+		<p>{{ 'Nothing has been translated yet.' | t('traduco') }}</p>
+	{% else %}
+		<table class="data fullwidth" id="traduco-history">
+			<thead>
+				<tr>
+					<th scope="col">{{ 'When' | t('traduco') }}</th>
+					<th scope="col">{{ 'Element' | t('traduco') }}</th>
+					<th scope="col">{{ 'Into' | t('traduco') }}</th>
+					<th scope="col">{{ 'What' | t('traduco') }}</th>
+					<th scope="col">{{ 'Characters' | t('traduco') }}</th>
+					<th scope="col">{{ 'Status' | t('traduco') }}</th>
+					<th scope="col">{{ 'By' | t('traduco') }}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for run in runs %}
+					{% set status = statuses[run.status] ?? { label: run.status, color: 'gray' } %}
+					{% set element = run.getElement() %}
+					<tr>
+						<td>{{ run.dateCreated ? run.dateCreated | datetime('short') : '-' }}</td>
+						<td>
+							{% if element and element.getCpEditUrl() %}
+								<a href="{{ element.getCpEditUrl() }}">{{ element.title ?? element.id }}</a>
+							{% elseif element %}
+								{{ element.title ?? element.id }}
+							{% else %}
+								{# Hard deletes take their runs with them, so this is an element that can no longer be read #}
+								<span class="light">{{ 'Element {id}' | t('traduco', { id: run.elementId }) }}</span>
+							{% endif %}
+							<span class="light">{{ run.getSite() ? run.getSite().name : run.siteId }}</span>
+						</td>
+						<td>{{ run.getTargetSite() ? run.getTargetSite().name : run.targetSiteId }}</td>
+						<td>
+							{{ kinds[run.kind] ?? run.kind }}
+							{% if run.attribute %}<code>{{ run.attribute }}</code>{% endif %}
+						</td>
+						<td>
+							{# Null for a translator that doesn't count what it sends, which a third-party one needn't #}
+							{{ run.characters is not null ? run.characters | number : '-' }}
+						</td>
+						<td>
+							<span class="status-label {{ status.color }}">
+								<span class="status {{ status.color }}"></span>
+								<span class="status-label-text">{{ status.label }}</span>
+							</span>
+							{% if run.error %}<div class="error">{{ run.error }}</div>{% endif %}
+						</td>
+						<td>
+							{{ run.getUser() ? run.getUser().getName() : '-' }}
+							{% if run.getTranslatorName() %}<span class="light">{{ run.getTranslatorName() }}</span>{% endif %}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+		{% if pageCount > 1 %}
+			<nav class="pagination flex" aria-label="{{ 'Pagination' | t('app') }}">
+				{% if page > 1 %}
+					<a class="btn" href="{{ url('traduco/history', { page: page - 1 }) }}">{{ 'Previous Page' | t('app') }}</a>
+				{% endif %}
+				<div class="flex-grow light">
+					{{ 'Page {page} of {pageCount}, {total} in all' | t('traduco', { page: page, pageCount: pageCount, total: total }) }}
+				</div>
+				{% if page < pageCount %}
+					<a class="btn" href="{{ url('traduco/history', { page: page + 1 }) }}">{{ 'Next Page' | t('app') }}</a>
+				{% endif %}
+			</nav>
+		{% endif %}
+	{% endif %}
+{% endblock %}

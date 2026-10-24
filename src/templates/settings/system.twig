@@ -1,0 +1,84 @@
+{% requirePermission 'traduco:settings:system' %}
+{% extends '@traduco/layouts/settings.twig' %}
+{# @var plugin \ContentReactor\Traduco\Plugin #}
+{# @var settings \ContentReactor\Traduco\Models\UserSettings #}
+{# @var translatorSettings \ContentReactor\Traduco\Base\TranslatorSettings[] by translator class #}
+
+{% import '_includes/forms.twig' as forms %}
+{% set settingsScreen = 'system' %}
+{% set fullPageForm = true %}
+
+{% block content %}
+	{{ actionInput('traduco/settings/save-system') }}
+	<div class="flex-fields">
+		{% namespace 'UserSettings' %}
+			{{ forms.selectField({
+				label: settings.attributeLabel('translator'),
+				instructions: settings.attributeHint('translator'),
+				showAttribute: true,
+				attribute: 'translator',
+				id: 'translator',
+				name: 'translator',
+				value: settings.translator ?? '',
+				options: settings.translatorOptions(),
+				errors: settings.getErrors('translator'),
+				fullWidth: true,
+				disabled: not (craft.app.config.general.allowAdminChanges and currentUser.can('traduco:settings:system')),
+				inputAttributes: {
+					data: { 'translator-select': true },
+				},
+			}) }}
+
+			{{ forms.autosuggestField({
+				instructions: settings.attributeHint('translatorApi'),
+				label: settings.attributeLabel('translatorApi'),
+				attribute: 'translatorApi',
+				id: 'translatorApi',
+				name: 'translatorApi',
+				value: settings.translatorApi,
+				required: true,
+				suggestEnvVars: true,
+				errors: settings.getErrors('translatorApi'),
+			}) }}
+		{% endnamespace %}
+	</div>
+
+	{# Every translator's own fields, so switching translators doesn't have to save twice and nothing posts over the
+	   settings of the one being switched away from. Namespaced outside UserSettings, see Translations::SETTINGS_PARAM. #}
+	{% for translatorClass, translator in translatorSettings ?? [] %}
+		<div class="{{ translatorClass == settings.translator ? '' : 'hidden' }}" data-translator-settings="{{ translatorClass }}">
+			<h2>{{ settings.translatorOptions()[translatorClass] ?? className(translator) }}</h2>
+			<div class="flex-fields">
+				{% namespace 'translatorSettings[' ~ (translatorClass | id) ~ ']' %}
+					{{ translator.getSettingsHtml() | raw }}
+				{% endnamespace %}
+			</div>
+		</div>
+	{% endfor %}
+{% endblock %}
+
+{% js %}
+(() => {
+	const select = document.querySelector('[data-translator-select]');
+	const panes = document.querySelectorAll('[data-translator-settings]');
+	if (!select) {
+		return;
+	}
+	// Craft's own field toggle builds its target from the raw option value, which here is a class name, so the panes
+	// are matched on a data attribute instead
+	const update = () => panes.forEach((pane) => {
+		pane.classList.toggle('hidden', pane.dataset.translatorSettings !== select.value);
+	});
+	select.addEventListener('change', update);
+	update();
+})();
+{% endjs %}
+
+{% css %}
+#content .field .select {
+	display: block;
+}
+#content .field .select select {
+	width: 100%;
+}
+{% endcss %}

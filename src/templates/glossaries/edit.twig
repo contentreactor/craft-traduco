@@ -1,0 +1,80 @@
+{% requirePermission 'traduco:glossaries' %}
+{% extends 'traduco/layouts/index.twig' %}
+{# @var plugin \ContentReactor\Traduco\Plugin #}
+{# @var glossaryId string|null null for a glossary that doesn't exist yet #}
+{# @var glossary array|null see DeepL::getGlossary() #}
+{# @var sourceOptions array select options, see GlossariesController::getLanguageOptions() #}
+{# @var targetOptions array #}
+
+{% import '_includes/forms.twig' as forms %}
+
+{% set title = glossary ? glossary.name : 'New glossary' | t('traduco') %}
+{% set selectedSubnavItem = 'glossaries' %}
+{% set fullPageForm = true %}
+{% set crumbs = [{ label: 'Glossaries' | t('traduco'), url: url('traduco/glossaries') }] %}
+
+{% block content %}
+	{{ actionInput('traduco/glossaries/save') }}
+	{{ hiddenInput('glossaryId', glossaryId) }}
+
+	<div class="flex-fields">
+		{{ forms.textField({
+			label: 'Name' | t('app'),
+			instructions: 'What this glossary is called in your DeepL account.' | t('traduco'),
+			id: 'name',
+			name: 'name',
+			value: glossary ? glossary.name : '',
+			required: true,
+		}) }}
+
+		{{ forms.selectField({
+			label: 'Translating From' | t('traduco'),
+			instructions: 'The site languages left out are ones DeepL would have to detect, which rules out a glossary.' | t('traduco'),
+			id: 'source',
+			name: 'source',
+			value: source,
+			options: sourceOptions,
+			required: true,
+		}) }}
+
+		{{ forms.selectField({
+			label: 'Translating Into' | t('traduco'),
+			id: 'target',
+			name: 'target',
+			value: target,
+			options: targetOptions,
+			required: true,
+		}) }}
+
+		{{ forms.textareaField({
+			label: 'Entries' | t('traduco'),
+			instructions: 'One entry a line, the term and its translation separated by a tab. Saving replaces every entry of this language pair.' | t('traduco'),
+			id: 'entries',
+			name: 'entries',
+			value: entriesTsv,
+			rows: 12,
+			class: 'code',
+		}) }}
+
+		{{ forms.field({
+			label: 'Or upload a file' | t('traduco'),
+			instructions: 'A TSV or CSV file with the term in the first column and its translation in the second. It replaces whatever is typed above.' | t('traduco'),
+		}, tag('input', { type: 'file', name: 'entriesFile', accept: '.tsv,.csv,text/tab-separated-values,text/csv' })) }}
+	</div>
+
+	{% if glossary and glossary.dictionaries is not empty %}
+		<hr>
+		<h2>{{ 'Dictionaries' | t('traduco') }}</h2>
+		<p class="light">{{ 'Saving above replaces the entries of the language pair selected, and adds the pair where this glossary has no dictionary for it yet.' | t('traduco') }}</p>
+		<ul>
+			{% for dictionary in glossary.dictionaries %}
+				<li>
+					<a href="{{ url('traduco/glossaries/' ~ glossaryId, { source: dictionary.source, target: dictionary.target }) }}">
+						{{ dictionary.source }} → {{ dictionary.target }}
+					</a>
+					<span class="light">{{ '{count} entries' | t('traduco', { count: dictionary.entries }) }}</span>
+				</li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+{% endblock %}

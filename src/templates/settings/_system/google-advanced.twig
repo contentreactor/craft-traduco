@@ -1,0 +1,72 @@
+{#
+	What Cloud Translation - Advanced needs beyond the credential. The system settings screen namespaces these and
+	decides when they're shown, see GoogleTranslateAdvancedSettings::getSettingsHtml().
+	Variables: settings (GoogleTranslateAdvancedSettings), plugin (Plugin)
+#}
+{% import '_includes/forms.twig' as forms %}
+
+{% set projectId = settings.getProjectId() %}
+
+{{ forms.field({
+	label: 'Service Account' | t('traduco'),
+	instructions: 'Advanced takes no API keys. Put the path to a service account key file in the field above, as an environment variable like $GOOGLE_APPLICATION_CREDENTIALS, so the key itself stays out of the database. The project is read from the file.' | t('traduco'),
+	warning: settings.getCredentialWarning(),
+}, tag('p', {
+	class: 'light',
+	text: projectId
+		? 'Project { project }' | t('traduco', { project: projectId })
+		: 'No project read yet' | t('traduco'),
+})) }}
+
+{{ forms.textField({
+	label: settings.getAttributeLabel('location'),
+	instructions: settings.getAttributeHint('location'),
+	id: 'location',
+	name: 'location',
+	value: settings.location,
+	required: true,
+	errors: settings.getErrors('location'),
+}) }}
+
+{{ forms.selectField({
+	label: settings.getAttributeLabel('model'),
+	instructions: settings.getAttributeHint('model'),
+	tip: plugin.isPro() ? null : plugin.proMessage('Google Translate (Advanced)'|t('traduco'), plugin.getSettings().getPluginName()),
+	id: 'model',
+	name: 'model',
+	value: settings.model,
+	options: settings.getModelOptions(),
+	errors: settings.getErrors('model'),
+}) }}
+
+{% set glossaryOptions = settings.getGlossaryOptions() %}
+
+{% if plugin.isPro() and glossaryOptions is not empty %}
+	{{ forms.checkboxSelectField({
+		label: settings.getAttributeLabel('glossaries'),
+		instructions: settings.getAttributeHint('glossaries'),
+		id: 'glossaries',
+		name: 'glossaries',
+		values: settings.glossaries,
+		options: glossaryOptions,
+		errors: settings.getErrors('glossaries'),
+		showAllOption: false,
+	}) }}
+
+	{{ forms.lightswitchField({
+		label: settings.getAttributeLabel('glossaryIgnoreCase'),
+		instructions: settings.getAttributeHint('glossaryIgnoreCase'),
+		id: 'glossaryIgnoreCase',
+		name: 'glossaryIgnoreCase',
+		on: settings.glossaryIgnoreCase,
+	}) }}
+{% else %}
+	{# Said rather than drawn disabled, so saving this screen can't clear a selection it isn't showing #}
+	{{ forms.field({
+		label: settings.getAttributeLabel('glossaries'),
+		instructions: settings.getAttributeHint('glossaries'),
+	}, '<p class="light">' ~ (plugin.isPro()
+		? settings.getGlossaryWarning()
+		: plugin.proMessage('Glossaries'|t('traduco'), plugin.getSettings().getPluginName())
+	) ~ '</p>') }}
+{% endif %}

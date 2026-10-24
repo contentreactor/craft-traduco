@@ -1,0 +1,20 @@
+{% requirePermission 'traduco:settings:admin' %}
+{% extends '@traduco/layouts/settings.twig' %}
+{# @var plugin \ContentReactor\Traduco\Plugin #}
+{# @var settings \ContentReactor\Traduco\Models\UserSettings #}
+
+{% set settingsScreen = 'settings' %}
+{% set fullPageForm = true %}
+
+{% set tabs = {
+	general: {
+		label: 'General' | t('traduco'),
+		url: '#general',
+	},
+} %}
+
+{% block content %}
+	{{ actionInput('traduco/settings/save') }}
+	{{ redirectInput('traduco/settings') }}
+	{{ include('@traduco/settings/_general/general.twig') }}
+{% endblock %}

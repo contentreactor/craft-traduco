@@ -1,0 +1,139 @@
+{#
+	DeepL's own per-request options. The system settings screen namespaces these and decides when they're shown,
+	see DeepLSettings::getSettingsHtml().
+	Variables: settings (DeepLSettings), plugin (Plugin)
+#}
+{% import '_includes/forms.twig' as forms %}
+
+{% set usage = settings.getCharacterUsage() %}
+{% if usage %}
+	{{ forms.field({
+		label: 'Characters Used' | t('traduco'),
+		instructions: 'What this key has spent of its allowance for the current billing period, as DeepL reports it. Read at most once a minute.' | t('traduco'),
+	}, tag('p', {
+		class: usage.count >= usage.limit ? 'error' : 'light',
+		text: '{ count } of { limit }' | t('traduco', {
+			count: usage.count | number(0),
+			limit: usage.limit | number(0),
+		}),
+	})) }}
+{% endif %}
+
+{{ forms.textareaField({
+	label: settings.getAttributeLabel('context'),
+	instructions: settings.getAttributeHint('context'),
+	id: 'context',
+	name: 'context',
+	value: settings.context,
+	errors: settings.getErrors('context'),
+	rows: 3,
+}) }}
+
+{{ forms.selectField({
+	label: settings.getAttributeLabel('formality'),
+	instructions: settings.getAttributeHint('formality'),
+	id: 'formality',
+	name: 'formality',
+	value: settings.formality,
+	options: settings.getFormalityOptions(),
+	errors: settings.getErrors('formality'),
+}) }}
+
+{{ forms.selectField({
+	label: settings.getAttributeLabel('splitSentences'),
+	instructions: settings.getAttributeHint('splitSentences'),
+	id: 'splitSentences',
+	name: 'splitSentences',
+	value: settings.splitSentences,
+	options: settings.getSplitSentencesOptions(),
+	errors: settings.getErrors('splitSentences'),
+}) }}
+
+{{ forms.selectField({
+	label: settings.getAttributeLabel('rephraseStyle'),
+	instructions: settings.getAttributeHint('rephraseStyle'),
+	warning: settings.getRephraseWarning(),
+	tip: plugin.isPro() ? null : plugin.proMessage('Rephrasing values'|t('traduco'), plugin.getSettings().getPluginName()),
+	id: 'rephraseStyle',
+	name: 'rephraseStyle',
+	value: settings.rephraseStyle,
+	options: settings.getRephraseStyleOptions(),
+	errors: settings.getErrors('rephraseStyle'),
+}) }}
+
+{% set glossaryOptions = settings.getGlossaryOptions() %}
+
+{% if plugin.isPro() and glossaryOptions is not empty %}
+	{% set undetectableSources = settings.getUndetectableGlossarySources() %}
+	{{ forms.checkboxSelectField({
+		label: settings.getAttributeLabel('glossaries'),
+		instructions: settings.getAttributeHint('glossaries'),
+		id: 'glossaries',
+		name: 'glossaries',
+		values: settings.glossaries,
+		options: glossaryOptions,
+		errors: settings.getErrors('glossaries'),
+		showAllOption: false,
+	}) }}
+
+	{% if undetectableSources is not empty %}
+		<p class="light smalltext">
+			{{ 'DeepL needs an explicit source language for a glossary, and detects these site languages instead, so nothing translated out of them uses one: {languages}.' | t('traduco', {
+				languages: undetectableSources | join(', '),
+			}) }}
+		</p>
+	{% endif %}
+{% else %}
+	{# Said rather than drawn disabled: a disabled checkbox select still posts its hidden input, which would clear a
+	   selection this screen can't show, and leaving the field out keeps it, see Translations::getPostedSettingsModels() #}
+	{{ forms.field({
+		label: settings.getAttributeLabel('glossaries'),
+		instructions: settings.getAttributeHint('glossaries'),
+	}, '<p class="light">' ~ (plugin.isPro()
+		? settings.getGlossaryWarning()
+		: plugin.proMessage('Glossaries'|t('traduco'), plugin.getSettings().getPluginName())
+	) ~ '</p>') }}
+{% endif %}
+
+{# Only looked up where they can be chosen, so a Lite install asks DeepL for neither #}
+{% set styleOptions = plugin.isPro() ? settings.getStyleRuleOptions() : [] %}
+{% set memoryOptions = plugin.isPro() ? settings.getTranslationMemoryOptions() : [] %}
+
+{% if styleOptions is not empty %}
+	{{ forms.checkboxSelectField({
+		label: settings.getAttributeLabel('styleRules'),
+		instructions: settings.getAttributeHint('styleRules'),
+		id: 'styleRules',
+		name: 'styleRules',
+		values: settings.styleRules,
+		options: styleOptions,
+		errors: settings.getErrors('styleRules'),
+		showAllOption: false,
+	}) }}
+{% endif %}
+
+{% if memoryOptions is not empty %}
+	{{ forms.checkboxSelectField({
+		label: settings.getAttributeLabel('translationMemories'),
+		instructions: settings.getAttributeHint('translationMemories'),
+		id: 'translationMemories',
+		name: 'translationMemories',
+		values: settings.translationMemories,
+		options: memoryOptions,
+		errors: settings.getErrors('translationMemories'),
+		showAllOption: false,
+	}) }}
+
+	{{ forms.textField({
+		label: settings.getAttributeLabel('translationMemoryThreshold'),
+		instructions: settings.getAttributeHint('translationMemoryThreshold'),
+		id: 'translationMemoryThreshold',
+		name: 'translationMemoryThreshold',
+		type: 'number',
+		min: 50,
+		max: 100,
+		size: 5,
+		value: settings.translationMemoryThreshold,
+		errors: settings.getErrors('translationMemoryThreshold'),
+	}) }}
+{% endif %}

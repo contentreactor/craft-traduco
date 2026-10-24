@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+	<!-- Two speech bubbles, a Latin “A” answered by a “文”, with a gap where the second overlaps the first.
+	     Filled shapes only: Craft’s control panel doesn’t draw strokes in plugin icons. -->
+	<path fill="#07151F" fill-rule="evenodd" d="M14 8H54A8 8 0 0 1 62 16V34H50A12 12 0 0 0 38 46V56H30L16 68V56H14A8 8 0 0 1 6 48V16A8 8 0 0 1 14 8ZM21 14H27L35.5 42H29.5L27.7 36H20.3L18.5 42H12.5ZM24 23.9L25.9 30H22.1Z"/>
+	<path fill="#E31A46" fill-rule="evenodd" d="M50 38H86A8 8 0 0 1 94 46V78A8 8 0 0 1 86 86V96L74 86H50A8 8 0 0 1 42 78V46A8 8 0 0 1 50 38ZM65 44H71V50H65ZM52 52H84V58H79L71.5 66.7L83 80H76L68 70.7L60 80H53L64.5 66.7L57 58H52ZM64 58H72L68 62.6Z"/>
+</svg>

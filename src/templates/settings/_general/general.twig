@@ -1,0 +1,71 @@
+{% import '_includes/forms.twig' as forms %}
+
+<div id="general">
+	{% namespace 'UserSettings' %}
+		{{ forms.textField({
+			label: settings.getAttributeLabel('pluginName'),
+			instructions: settings.getAttributeHint('pluginName'),
+			showAttribute: true,
+			attribute: 'pluginName',
+			id: 'pluginName',
+			name: 'pluginName',
+			value: settings.pluginName ?? '',
+			errors: settings.getErrors('pluginName'),
+			disabled: not currentUser.can('traduco:settings:admin'),
+		}) }}
+
+		{{ forms.selectField({
+			label: settings.getAttributeLabel('sidebarPosition'),
+			instructions: settings.getAttributeHint('sidebarPosition'),
+			showAttribute: true,
+			attribute: 'sidebarPosition',
+			id: 'sidebarPosition',
+			name: 'sidebarPosition',
+			value: settings.sidebarPosition,
+			options: settings.getSidebarPositionOptions(),
+			errors: settings.getErrors('sidebarPosition'),
+			disabled: not currentUser.can('traduco:settings:admin'),
+		}) }}
+
+		{{ forms.radioGroupField({
+			label: settings.getAttributeLabel('richTextEntries'),
+			instructions: settings.getAttributeHint('richTextEntries'),
+			id: 'richTextEntries',
+			name: 'richTextEntries',
+			value: settings.richTextEntries,
+			options: settings.getRichTextEntriesOptions(),
+			errors: settings.getErrors('richTextEntries'),
+			disabled: not currentUser.can('traduco:settings:admin'),
+		}) }}
+
+		{{ forms.textField({
+			label: settings.getAttributeLabel('historyRetentionDays'),
+			instructions: settings.getAttributeHint('historyRetentionDays'),
+			tip: plugin.isPro() ? null : plugin.proMessage('Translation history'|t('traduco'), plugin.getPluginName()),
+			showAttribute: true,
+			attribute: 'historyRetentionDays',
+			id: 'historyRetentionDays',
+			name: 'historyRetentionDays',
+			type: 'number',
+			min: 0,
+			size: 5,
+			value: settings.historyRetentionDays,
+			errors: settings.getErrors('historyRetentionDays'),
+			disabled: not currentUser.can('traduco:settings:admin'),
+		}) }}
+
+		{{ forms.selectField({
+			label: settings.getAttributeLabel('queueNotifications'),
+			instructions: settings.getAttributeHint('queueNotifications'),
+			tip: plugin.isPro() ? null : plugin.proMessage('Email notifications'|t('traduco'), plugin.getPluginName()),
+			showAttribute: true,
+			attribute: 'queueNotifications',
+			id: 'queueNotifications',
+			name: 'queueNotifications',
+			value: settings.queueNotifications,
+			options: settings.getQueueNotificationsOptions(),
+			errors: settings.getErrors('queueNotifications'),
+			disabled: not currentUser.can('traduco:settings:admin'),
+		}) }}
+	{% endnamespace %}
+</div>

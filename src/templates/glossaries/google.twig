@@ -1,0 +1,63 @@
+{% requirePermission 'traduco:glossaries' %}
+{% extends 'traduco/layouts/index.twig' %}
+{# @var glossaries array by short glossary ID, see GoogleTranslateAdvanced::getGlossaries() #}
+
+{% set title = 'Glossaries' | t('traduco') %}
+{% set selectedSubnavItem = 'glossaries' %}
+
+{% block actionButton %}
+	{% if isAvailable %}
+		<a class="btn submit add icon" href="{{ url('traduco/glossaries/google/new') }}">{{ 'New glossary' | t('traduco') }}</a>
+	{% endif %}
+{% endblock %}
+
+{% block content %}
+	{% if not isConfigured %}
+		<p class="error">{{ 'Select Google Translate (Advanced) as the translator and save a service account it can use.' | t('traduco') }}</p>
+	{% elseif not isAvailable %}
+		<p class="error">{{ 'Google keeps glossaries per region, so the “global” location has none. Set a region on System Settings to use them.' | t('traduco') }}</p>
+	{% else %}
+		<p class="light">
+			{{ 'These are the glossaries of project {project}. Google builds each one from a file in your own Cloud Storage bucket, and Traduco reads and edits them where they are rather than keeping copies.' | t('traduco', { project: projectId }) }}
+		</p>
+
+		{% if glossaries is empty %}
+			<p>{{ 'This project has no glossaries yet.' | t('traduco') }}</p>
+		{% else %}
+			<table class="data fullwidth" id="traduco-google-glossaries">
+				<thead>
+					<tr>
+						<th scope="col">{{ 'Name' | t('traduco') }}</th>
+						<th scope="col">{{ 'Languages' | t('traduco') }}</th>
+						<th scope="col">{{ 'Terms' | t('traduco') }}</th>
+						<th scope="col"><span class="visually-hidden">{{ 'Actions' | t('traduco') }}</span></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for glossaryId, glossary in glossaries %}
+						<tr>
+							<td><a href="{{ url('traduco/glossaries/google/' ~ glossaryId) }}">{{ glossary.name }}</a></td>
+							<td>
+								{% if glossary.set is not empty %}
+									{{ glossary.set | join(', ') }}
+									<span class="light">{{ 'Equivalent terms' | t('traduco') }}</span>
+								{% else %}
+									{{ glossary.source }} → {{ glossary.target }}
+								{% endif %}
+							</td>
+							<td>{{ glossary.entries }}</td>
+							<td class="thin">
+								<form method="post">
+									{{ csrfInput() }}
+									{{ actionInput('traduco/google-glossaries/delete') }}
+									{{ hiddenInput('glossaryId', glossaryId) }}
+									<button type="submit" class="btn small delete">{{ 'Delete' | t('app') }}</button>
+								</form>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% endif %}
+	{% endif %}
+{% endblock %}

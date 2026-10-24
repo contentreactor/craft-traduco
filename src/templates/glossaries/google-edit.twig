@@ -1,0 +1,109 @@
+{% requirePermission 'traduco:glossaries' %}
+{% extends 'traduco/layouts/index.twig' %}
+{# @var glossary array|null null for one that doesn't exist yet #}
+{# @var entries array by entry ID, see GoogleTranslateAdvanced::getGlossaryEntries() #}
+{# @var languages array<string, string> Google codes by site language #}
+
+{% import '_includes/forms.twig' as forms %}
+
+{% set title = glossary ? glossary.name : 'New glossary' | t('traduco') %}
+{% set selectedSubnavItem = 'glossaries' %}
+{% set crumbs = [{ label: 'Glossaries' | t('traduco'), url: url('traduco/glossaries/google') }] %}
+
+{% set languageOptions = [{ value: '', label: 'Select a language…' | t('traduco'), disabled: true }] %}
+{% for siteLanguage, code in languages %}
+	{% set languageOptions = languageOptions | merge([{ value: code, label: siteLanguage ~ ' (' ~ code ~ ')' }]) %}
+{% endfor %}
+
+{% block content %}
+	{% if not glossary %}
+		<form method="post" accept-charset="UTF-8">
+			{{ csrfInput() }}
+			{{ actionInput('traduco/google-glossaries/create') }}
+
+			<div class="flex-fields">
+				{{ forms.textField({
+					label: 'ID' | t('traduco'),
+					instructions: 'What Google calls the glossary. Letters, digits, underscores and hyphens.' | t('traduco'),
+					id: 'glossaryId',
+					name: 'glossaryId',
+					required: true,
+				}) }}
+
+				{{ forms.selectField({
+					label: 'Translating From' | t('traduco'),
+					id: 'source',
+					name: 'source',
+					options: languageOptions,
+					required: true,
+				}) }}
+
+				{{ forms.selectField({
+					label: 'Translating Into' | t('traduco'),
+					id: 'target',
+					name: 'target',
+					options: languageOptions,
+					required: true,
+				}) }}
+
+				{{ forms.textField({
+					label: 'Cloud Storage File' | t('traduco'),
+					instructions: 'The gs:// URI of a TSV, CSV or TMX file in your own bucket. Google reads it, so the service account needs the Storage Object Viewer role on that bucket. Traduco never writes there.' | t('traduco'),
+					id: 'inputUri',
+					name: 'inputUri',
+					placeholder: 'gs://your-bucket/glossary.tsv',
+					required: true,
+				}) }}
+			</div>
+
+			<div class="buttons">
+				<button type="submit" class="btn submit">{{ 'Create' | t('app') }}</button>
+			</div>
+		</form>
+	{% else %}
+		<p class="light">
+			{% if glossary.set is not empty %}
+				{{ 'An equivalent term set, covering {languages}. Its terms hold one word per language, so they’re read here rather than edited.' | t('traduco', { languages: glossary.set | join(', ') }) }}
+			{% else %}
+				{{ '{source} to {target}, {count} terms. Google has no call to replace them all at once, so they’re edited one at a time.' | t('traduco', { source: glossary.source, target: glossary.target, count: glossary.entries }) }}
+			{% endif %}
+		</p>
+
+		{% if glossary.set is empty %}
+			<table class="data fullwidth" id="traduco-google-terms">
+				<thead>
+					<tr>
+						<th scope="col">{{ 'Term' | t('traduco') }}</th>
+						<th scope="col">{{ 'Translation' | t('traduco') }}</th>
+						<th scope="col"><span class="visually-hidden">{{ 'Actions' | t('traduco') }}</span></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for entryId, entry in entries %}
+						<tr>
+							<form method="post">
+								{{ csrfInput() }}
+								{{ actionInput('traduco/google-glossaries/save-entry') }}
+								{{ hiddenInput('glossaryId', glossaryId) }}
+								{{ hiddenInput('entryId', entryId) }}
+								<td>{{ hiddenInput('source', entry.source) }}{{ entry.source }}</td>
+								<td>{{ tag('input', { type: 'text', class: 'text fullwidth', name: 'target', value: entry.target }) }}</td>
+								<td class="thin"><button type="submit" class="btn small">{{ 'Save' | t('app') }}</button></td>
+							</form>
+						</tr>
+					{% endfor %}
+					<tr>
+						<form method="post">
+							{{ csrfInput() }}
+							{{ actionInput('traduco/google-glossaries/save-entry') }}
+							{{ hiddenInput('glossaryId', glossaryId) }}
+							<td>{{ tag('input', { type: 'text', class: 'text fullwidth', name: 'source', placeholder: 'New term'|t('traduco') }) }}</td>
+							<td>{{ tag('input', { type: 'text', class: 'text fullwidth', name: 'target', placeholder: 'Its translation'|t('traduco') }) }}</td>
+							<td class="thin"><button type="submit" class="btn small submit">{{ 'Add' | t('app') }}</button></td>
+						</form>
+					</tr>
+				</tbody>
+			</table>
+		{% endif %}
+	{% endif %}
+{% endblock %}
